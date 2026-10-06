@@ -1,56 +1,63 @@
 # Feasibility Spike Log
 
-**Updated:** 2026-10-06 (Africa/Lagos). **Result: PARTIAL PASS; hard integration gate remains open.** The official React Native Solana Mobile scaffold builds a debug APK. No APK has yet been installed/launched on a phone; no real wallet/MWA session or live Solana transaction has been tested. Do not treat scaffold or unit tests as integration evidence.
+**Updated:** 2026-10-06 (Africa/Lagos). **Result: PARTIAL PASS; mainnet MWA gate remains open.** A signed release APK now builds and its SHA-256 is recorded below. ADB recognizes the physical TECNO KL5 (Android 14 / API 34), but Android currently blocks its installation. No MWA-compatible wallet, MWA authorization, user-approved mainnet transaction, or independent mainnet confirmation has been demonstrated. The complete event product is not implemented.
 
 ## Environment and pinned scaffold
 
 | Component | Observed |
 |---|---|
-| Host | Windows 11; user freed space and approximately 27 GB was available before SDK/Gradle install. |
+| Host | Windows 11; user freed disk space; about 27 GB was available before SDK/Gradle install. |
 | Java | Eclipse Temurin OpenJDK 17.0.20.1 (`C:\Program Files\Eclipse Adoptium\jdk-17.0.20.101-hotspot`). |
 | Node / npm | Node 24.18.0; npm 11.16.0. |
 | React Native | 0.71.4; TypeScript 4.8.4; React 18.2.0. |
 | MWA client | `@solana-mobile/mobile-wallet-adapter-protocol` and `...-web3js` 2.0.0. |
-| Solana client | `@solana/web3.js` resolved to 1.75.0 by installed lockfile. |
-| Gradle wrapper | 7.5.1-all; downloaded and used successfully. |
+| Solana client | `@solana/web3.js` resolved to 1.75.0 from the lockfile. |
+| Gradle wrapper | 7.5.1-all. |
 | Android Gradle plugin | 7.3.1. |
-| Android target | Compile SDK 33; build-tools 33.0.0 installed, and Gradle also installed build-tools 30.0.3. Platform-tools installed. |
-| Android Studio / emulator | Not installed. Android command-line tools 22.0 and ADB are installed. Emulator is not available. |
-| Physical device | User reports connecting an Android phone and enabling Developer options. `adb devices -l` still returned an empty device list. USB debugging/RSA authorization and device recognition remain open. |
-| Solana CLI / Anchor | Not installed; not needed for this client-only Memo spike. |
+| Android SDK | Compile SDK 33; build-tools 33.0.0; platform-tools installed. |
+| Android Studio / emulator | Android Studio and emulator are not installed; command-line tools 22.0 and ADB are available. |
+| Physical device | TECNO KL5 (`TECNO_KL5`), serial `12680154BX022793`, Android 14 / API 34. `adb devices -l` reports state `device`. Initial install was refused with `INSTALL_FAILED_VERIFICATION_FAILURE`; after the device setting was changed, streamed install succeeded and `com.clockinspike/.MainActivity` was observed as the top resumed activity. |
+| Wallet | Solflare (`com.solflare.mobile`) was installed from its official Play listing. The app's MWA connect action returned `Found no installed wallet...` before installation; on retry, the user confirmed Solflare displayed an OpenMic connection request. User authorization is pending. |
+| Solana CLI / Anchor | Not installed. A client Memo proof does not require either. |
 
-Scaffold is based on [Solana Mobile's official dApp scaffold](https://github.com/solana-mobile/solana-mobile-dapp-scaffold). Supplied `demonchant/clockin` repository was empty at clone time. Source is under `clockin-app/ClockInSpike`.
+The native foundation is based on [Solana Mobile's official dApp scaffold](https://github.com/solana-mobile/solana-mobile-dapp-scaffold). The supplied `demonchant/clockin` repository was empty at clone time. Source is under `clockin-app/ClockInSpike`.
 
 ## What was actually tested
 
-- `npm.cmd install`: completed; 1,343 packages audited. npm reported 44 vulnerabilities (5 low, 15 moderate, 21 high, 3 critical); this is not a security clearance.
-- `npx.cmd tsc --noEmit`: passed.
-- `npm.cmd test -- --runInBand`: passed, 2 suites / 6 tests after configuring Jest for the scaffold's `uuid` ESM dependency. Transaction verification tests use fabricated parsed transaction objects and do not contact Solana.
-- `sdkmanager --licenses`: reported Android SDK package licenses accepted after user authorization.
-- `gradlew assembleDebug`: **BUILD SUCCESSFUL in 22m 44s**; 120 actionable tasks (115 executed, 5 up-to-date).
-- Debug APK: `clockin-app/ClockInSpike/android/app/build/outputs/apk/debug/app-debug.apk`; 56,959,647 bytes. SHA-256: `571F8E9D61343181BB22B5F74504E06A03A0E13A99696704A399F7CDD68E4759`.
-- `adb devices -l`: ADB server starts but reports no attached devices. The APK has not been installed or launched on a phone.
+- `npm.cmd install` completed; npm reported 44 vulnerabilities (1,343 packages audited: 5 low, 15 moderate, 21 high, 3 critical). This is not a security clearance.
+- `npx.cmd tsc --noEmit` passed.
+- `npm.cmd test -- --runInBand` passed, 2 suites / 6 tests. The verifier tests use fixture transaction objects and do not contact Solana; they are not live-integration evidence.
+- Android SDK licenses were accepted after user authorization.
+- `gradlew assembleDebug`: **BUILD SUCCESSFUL**, 22m 44s; debug APK was 56,959,647 bytes, SHA-256 `571F8E9D61343181BB22B5F74504E06A03A0E13A99696704A399F7CDD68E4759`. This earlier APK targets devnet and must not be used for the requested demo.
+- The later mainnet release attempt first failed because AAPT2 timed out compiling an obsolete generated 8.3 MB scaffold image. The unused source image was removed and a clean rebuild completed successfully.
+- Mainnet release APK (dark/amber UI): `ClockInSpike/android/app/build/outputs/apk/release/app-release.apk`; SHA-256 `C308508781A4E1B7CF70321280FBF7AC17B201D5F6CDF6E7CEB34BD7DAB02D53`. The APK rebuilt successfully, installed over USB, and relaunched on the physical phone. It is built with the current local release signing config; reproducible clean-checkout build and distribution signing are not yet verified.
+- `adb devices -l`: physical TECNO is visible. `adb install -r` was attempted and rejected by Android with `INSTALL_FAILED_VERIFICATION_FAILURE: Install not allowed for file:///data/app/vmdl1143386231.tmp`.
+- After the phone's install-verification setting was changed, `adb install -r app-release.apk` returned **Success**. `adb shell monkey -p com.clockinspike 1` launched the app; `dumpsys activity` reported `com.clockinspike/.MainActivity` as top resumed.
+- The on-device MWA connection attempt first returned `Found no installed wallet that supports the mobile wallet protocol.` Solflare was then installed by the user from its official listing. A later MWA invocation opened Solflare, and the user reported seeing an OpenMic connection request. This verifies app-to-wallet handoff, **not authorization**. The user's wallet decision is pending. The Solana Mobile MWA registry lists Solflare Android (`com.solflare.mobile`): https://github.com/solana-mobile/mobile-wallet-adapter-registry/blob/main/entries/solflare-android.json.
+- The redesigned build uses a dark field-terminal palette with signal amber and cyan status accents, derived from the event page's “Radiants Unified Field Terminal”/“CLOCK IN OS” framing. This is an app design choice, not a claim that these exact colors are mandated by the event.
+- Device reports Android 14 / API 34. A package-list check for common wallet names returned no match for user 0.
 
 ## Hard gate status
 
 | Required proof | Result |
 |---|---|
-| Android APK builds | **PASSED** — debug APK produced; hash and size recorded above. |
-| APK installs and launches on physical hardware | **NOT RUN** — ADB device list is empty. |
-| App invokes MWA | **NOT RUN** — launch has not been possible. |
-| Real compatible wallet authorizes app | **NOT RUN**. |
-| Wallet explicitly signs devnet transaction | **NOT RUN**. |
-| Devnet accepts the transaction | **NOT RUN**. |
-| Independent finalized RPC query checks signer and memo | **NOT RUN**. |
-| App distinguishes submitted, pending and verified live states | **NOT RUN**. |
-| Physical-device submission requirement | **NOT PASSED** — an actual on-device run is mandatory. |
+| Mainnet Android APK builds | **PASSED**; hash and size recorded above. |
+| APK installs on physical hardware | **PASSED**; ADB streamed installation returned `Success`. |
+| APK launches on physical hardware | **PASSED**; top resumed activity is `com.clockinspike/.MainActivity`. |
+| App invokes MWA and reaches a compatible wallet | **PASSED**; user confirms Solflare connection prompt appeared. |
+| Real compatible wallet authorizes application | **PENDING USER APPROVAL**. |
+| User explicitly approves a mainnet transaction | **NOT RUN**. |
+| Mainnet accepts transaction | **NOT RUN**. |
+| Independent finalized RPC readback checks signer and memo | **NOT RUN**. |
+| UI distinguishes submitted, pending, and independently verified live states on device | **NOT RUN**. |
+| Complete issuer-authenticated event claim / passport workflow | **NOT IMPLEMENTED**. |
 
-The current spike component constructs a Memo-program devnet transaction, asks MWA to sign, submits the signed bytes, then checks signature status and parsed transaction through RPC before displaying verified. This is **code present, not working evidence**. It lacks durable pending-signature recovery after app restarts and must not be presented as the final event-claim architecture yet.
+The current spike code constructs a Memo-program mainnet transaction, requests signing through MWA, submits it, and queries signature status/parsed transaction through RPC. **This describes code, not a tested integration.** It is a wallet/network feasibility screen, not an event claim. No event QR, issuer signature, event receipt, user event history, or durable crash recovery exists yet. No event is fabricated for demonstration.
 
-## Next step and evidence still required
+## Next gate
 
-Turn on **USB debugging** separately from Developer options, unlock and reconnect the phone, accept the RSA authorization prompt, and resolve any OEM driver issue until `adb devices -l` shows its serial with status `device`. Install a real MWA-compatible wallet on that phone. Then install/launch this APK and exercise authorization, explicit devnet Memo approval, submission and independent finalized readback. No mock wallet or simulator can substitute for the required physical-device evidence.
+On the TECNO, find Developer options and enable **Install via USB** (label/location may vary by HiOS build). Keep the phone unlocked and accept any install confirmation. This user-controlled device security setting is necessary because Android explicitly rejected the ADB install. Then rerun the install and verify the app opens on the phone. Install a real MWA-compatible wallet from its official source and confirm it appears as a wallet option. Only then can a user explicitly approve a clearly disclosed, low-value mainnet Memo transaction; the transaction writes a public memo and may consume a network fee. After approval, independently verify finalized status and the expected signer/memo by RPC. Do not perform this until the user has reviewed the wallet prompt and fee.
 
-Still required: phone model and Android version; real wallet name/version; MWA authorization and explicit approval recording; devnet transaction signature; independent finalized verification evidence; wallet rejection, unavailable-wallet, network outage, delayed finality and restart-recovery results; successful clean-checkout build.
+Following the spike: obtain a real issuer and genuine signed event payload, build the smallest complete event-claim flow without fixtures in the product, persist pending signatures, and verify live mainnet postconditions before showing confirmed. If no real issuer event payload is available, do not fake one or claim the event workflow is done.
 
-**Status labels:** deterministic tests **TESTED LOCALLY (FIXTURE DATA)**; debug APK build **PASSED**; APK/device launch, MWA authorization, live wallet approval and Solana readback **UNKNOWN / NOT PASSED**.
+**Status labels:** deterministic verifier tests **PASSED LOCALLY WITH FIXTURE OBJECTS**; mainnet release build **PASSED**; phone install and launch **PASSED**; real MWA handoff to Solflare **PASSED**; wallet authorization **PENDING USER APPROVAL**; mainnet transaction / independent readback **NOT RUN**; event product **NOT IMPLEMENTED**.

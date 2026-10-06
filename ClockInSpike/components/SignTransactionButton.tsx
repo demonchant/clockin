@@ -35,18 +35,18 @@ type ProofState =
   | 'FAILED';
 
 const stateCopy: Record<ProofState, string> = {
-  READY: 'Ready to test a real wallet transaction.',
+  READY: 'Ready for an explicit wallet-approved mainnet transaction.',
   AWAITING_WALLET: 'Waiting for wallet approval…',
-  SUBMITTING: 'Wallet signed. Sending to Solana devnet…',
+  SUBMITTING: 'Wallet signed. Sending to Solana mainnet…',
   SUBMITTED: 'Submitted. Checking the network independently…',
   PENDING_VERIFICATION: 'Submitted; waiting for finalized verification.',
-  CONFIRMED: 'Finalized and independently verified on devnet.',
+  CONFIRMED: 'Finalized and independently verified on mainnet.',
   USER_REJECTED: 'Wallet approval was cancelled. No transaction was submitted.',
   FAILED: 'The transaction could not be verified. Review the details and retry.',
 };
 
 const explorerUrl = (signature: string) =>
-  `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+  `https://explorer.solana.com/tx/${signature}`;
 
 export default function SignTransactionButton() {
   const {connection} = useConnection();
@@ -108,7 +108,7 @@ export default function SignTransactionButton() {
     setDetail(null);
     setState('AWAITING_WALLET');
 
-    const memo = `CLOCKIN_SPIKE|${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+    const memo = `OPENMIC_PASSPORT|MAINNET_RECEIPT|${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
     let walletAddress: PublicKey | null = null;
     let submittedSignature: string | null = null;
 
@@ -180,14 +180,14 @@ export default function SignTransactionButton() {
       <View style={styles.headerRow}>
         <View style={styles.networkPill}>
           <View style={styles.networkDot} />
-          <Text style={styles.networkText}>SOLANA DEVNET</Text>
+          <Text style={styles.networkText}>SOLANA MAINNET</Text>
         </View>
-        <Text style={styles.stepLabel}>LIVE SPIKE</Text>
+        <Text style={styles.stepLabel}>MAINNET LIVE</Text>
       </View>
 
       <Text style={styles.title}>Wallet → verified receipt</Text>
       <Text style={styles.description}>
-        Approve a small memo transaction. The app reports confirmed only after it
+        Approve a public memo transaction and pay a real fee. The app reports confirmed only after it
         finds the finalized transaction and checks your wallet signature and memo.
       </Text>
 
@@ -200,7 +200,7 @@ export default function SignTransactionButton() {
           (state === 'FAILED' || state === 'USER_REJECTED') && styles.statusFailure,
           state === 'PENDING_VERIFICATION' && styles.statusPending,
         ]}>
-        {inProgress && <ActivityIndicator color="#183c34" size="small" />}
+        {inProgress && <ActivityIndicator color="#ffb64d" size="small" />}
         {state === 'CONFIRMED' && <Text style={styles.statusIcon}>✓</Text>}
         {state === 'FAILED' && <Text style={styles.statusIcon}>!</Text>}
         {state === 'USER_REJECTED' && <Text style={styles.statusIcon}>×</Text>}
@@ -213,7 +213,7 @@ export default function SignTransactionButton() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
-          state === 'PENDING_VERIFICATION' ? 'Check transaction status again' : 'Sign and send a devnet memo'
+          state === 'PENDING_VERIFICATION' ? 'Check transaction status again' : 'Sign and send a mainnet memo'
         }
         disabled={inProgress}
         onPress={state === 'PENDING_VERIFICATION' ? retryVerification : submit}
@@ -226,7 +226,7 @@ export default function SignTransactionButton() {
           {state === 'PENDING_VERIFICATION'
             ? 'Check status again'
             : state === 'CONFIRMED'
-              ? 'Send another test receipt'
+              ? 'Create another mainnet memo'
               : state === 'AWAITING_WALLET' || state === 'SUBMITTING' || state === 'SUBMITTED'
                 ? 'Working…'
                 : 'Connect wallet & approve'}
@@ -243,7 +243,7 @@ export default function SignTransactionButton() {
           <Pressable
             accessibilityRole="link"
             onPress={() => Linking.openURL(explorerUrl(attempt.current!.signature))}>
-            <Text style={styles.explorerLink}>Open devnet explorer ↗</Text>
+            <Text style={styles.explorerLink}>Open mainnet explorer ↗</Text>
           </Pressable>
         </View>
       ) : null}
@@ -251,7 +251,7 @@ export default function SignTransactionButton() {
       <View style={styles.warning}>
         <Text style={styles.warningMark}>i</Text>
         <Text style={styles.warningText}>
-          Test only. This writes a public devnet memo and pays a devnet fee. No
+          Live mainnet action. This writes a public mainnet memo and pays a mainnet fee. No
           private key is stored by this app.
         </Text>
       </View>
@@ -261,12 +261,12 @@ export default function SignTransactionButton() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fffdf9',
-    borderColor: '#e9e4db',
+    backgroundColor: '#171a22',
+    borderColor: '#2d303a',
     borderRadius: 24,
     borderWidth: 1,
     padding: 20,
-    shadowColor: '#162d28',
+    shadowColor: '#000000',
     shadowOffset: {width: 0, height: 8},
     shadowOpacity: 0.06,
     shadowRadius: 18,
@@ -275,20 +275,20 @@ const styles = StyleSheet.create({
   headerRow: {alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'},
   networkPill: {
     alignItems: 'center',
-    backgroundColor: '#e9f3ed',
+    backgroundColor: '#292219',
     borderRadius: 99,
     flexDirection: 'row',
     paddingHorizontal: 11,
     paddingVertical: 7,
   },
-  networkDot: {backgroundColor: '#398364', borderRadius: 4, height: 7, marginRight: 7, width: 7},
-  networkText: {color: '#285844', fontSize: 10, fontWeight: '800', letterSpacing: 1},
-  stepLabel: {color: '#9b5a41', fontSize: 10, fontWeight: '800', letterSpacing: 1.2},
-  title: {color: '#183c34', fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginTop: 22},
-  description: {color: '#67746e', fontSize: 14, lineHeight: 21, marginTop: 9},
+  networkDot: {backgroundColor: '#ffb64d', borderRadius: 4, height: 7, marginRight: 7, width: 7},
+  networkText: {color: '#ffd28d', fontSize: 10, fontWeight: '800', letterSpacing: 1},
+  stepLabel: {color: '#8bd8ff', fontSize: 10, fontWeight: '800', letterSpacing: 1.2},
+  title: {color: '#f4f0e8', fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginTop: 22},
+  description: {color: '#b0b3bd', fontSize: 14, lineHeight: 21, marginTop: 9},
   statusBox: {
     alignItems: 'center',
-    backgroundColor: '#f2f0eb',
+    backgroundColor: '#242730',
     borderRadius: 16,
     flexDirection: 'row',
     marginTop: 20,
@@ -296,16 +296,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  statusSuccess: {backgroundColor: '#e8f4eb'},
-  statusFailure: {backgroundColor: '#fff0ec'},
-  statusPending: {backgroundColor: '#fff5df'},
-  statusIcon: {color: '#28644b', fontSize: 20, fontWeight: '800', marginRight: 10},
+  statusSuccess: {backgroundColor: '#172733'},
+  statusFailure: {backgroundColor: '#352126'},
+  statusPending: {backgroundColor: '#352b1e'},
+  statusIcon: {color: '#80d7ff', fontSize: 20, fontWeight: '800', marginRight: 10},
   statusCopy: {flex: 1, marginLeft: 10},
-  statusTitle: {color: '#183c34', fontSize: 13, fontWeight: '700', lineHeight: 18},
-  detail: {color: '#69736e', fontSize: 12, lineHeight: 17, marginTop: 4},
+  statusTitle: {color: '#f4f0e8', fontSize: 13, fontWeight: '700', lineHeight: 18},
+  detail: {color: '#b0b3bd', fontSize: 12, lineHeight: 17, marginTop: 4},
   action: {
     alignItems: 'center',
-    backgroundColor: '#153f35',
+    backgroundColor: '#ffb347',
     borderRadius: 15,
     flexDirection: 'row',
     justifyContent: 'center',
@@ -313,15 +313,15 @@ const styles = StyleSheet.create({
     minHeight: 54,
     paddingHorizontal: 18,
   },
-  actionPressed: {backgroundColor: '#245c4e', transform: [{scale: 0.985}]},
-  actionDisabled: {backgroundColor: '#82948d'},
-  actionText: {color: '#fffdf9', fontSize: 15, fontWeight: '700'},
-  actionArrow: {color: '#d4e2d7', fontSize: 19, marginLeft: 10},
-  receipt: {borderTopColor: '#e9e4db', borderTopWidth: 1, marginTop: 19, paddingTop: 16},
-  receiptLabel: {color: '#858d87', fontSize: 9, fontWeight: '800', letterSpacing: 1.2},
-  signature: {color: '#344b43', fontSize: 11, lineHeight: 17, marginTop: 8},
-  explorerLink: {color: '#26735a', fontSize: 13, fontWeight: '700', marginTop: 9},
+  actionPressed: {backgroundColor: '#ffc563', transform: [{scale: 0.985}]},
+  actionDisabled: {backgroundColor: '#615c62'},
+  actionText: {color: '#1c1711', fontSize: 15, fontWeight: '700'},
+  actionArrow: {color: '#1c1711', fontSize: 19, marginLeft: 10},
+  receipt: {borderTopColor: '#30333c', borderTopWidth: 1, marginTop: 19, paddingTop: 16},
+  receiptLabel: {color: '#a1a5ae', fontSize: 9, fontWeight: '800', letterSpacing: 1.2},
+  signature: {color: '#dedad1', fontSize: 11, lineHeight: 17, marginTop: 8},
+  explorerLink: {color: '#80d7ff', fontSize: 13, fontWeight: '700', marginTop: 9},
   warning: {alignItems: 'flex-start', flexDirection: 'row', marginTop: 18},
-  warningMark: {color: '#a76b31', fontSize: 13, fontWeight: '800', marginRight: 8},
-  warningText: {color: '#85867f', flex: 1, fontSize: 11, lineHeight: 16},
+  warningMark: {color: '#ffbd59', fontSize: 13, fontWeight: '800', marginRight: 8},
+  warningText: {color: '#a2a5af', flex: 1, fontSize: 11, lineHeight: 16},
 });
