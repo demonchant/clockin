@@ -7,7 +7,7 @@ OpenMic Passport is intended to let people keep issuer-authenticated, independen
 - Native Android application built from Solana Mobile's React Native dApp scaffold.
 - A mainnet-only Memo transaction flow is present in source. Its real MWA authorization, wallet signing, submission, finality, and independent verification are **not yet proven**.
 - Mainnet release APK builds: `ClockInSpike/android/app/build/outputs/apk/release/app-release.apk` (19,659,717 bytes; SHA-256 `9C5898748A4DF9CEA6AA88E4B91A06BB3B94F2B1BAFB22478C91C7CA85492C1A`).
-- ADB sees a physical TECNO KL5 running Android 14 / API 34. The rebuilt release APK has been installed and launched (`com.clockinspike/.MainActivity`). Its current SHA-256 is `C308508781A4E1B7CF70321280FBF7AC17B201D5F6CDF6E7CEB34BD7DAB02D53`.
+- ADB sees a physical TECNO KL5 running Android 14 / API 34. A previous dark/amber release APK has been installed and launched (`com.clockinspike/.MainActivity`). The newest release APK—with the header `MAINNET` pill and dot removed—builds successfully but has not yet been installed so the current Solflare flow is not interrupted. New APK SHA-256: `F9017ADB0C1EE3208A3303B5D2ED84B1BA3F658866B9C9AA23E0D356C3D212DE`.
 - Solflare is installed. The app's real MWA handoff reached Solflare and the user reports an OpenMic connection request. Wallet authorization is still pending; no transaction has been signed or submitted.
 - No event QR, issuer, attendance claim, event receipt, or passport history is live.
 - **No testnet flow or mock transaction is intended for the submission.** Unit tests do use fixture transaction objects to exercise deterministic verifier logic; these tests are not represented as live evidence.
