@@ -11,10 +11,6 @@ export function Header() {
         <Text style={styles.title}>OpenMic</Text>
         <Text style={styles.subtitle}>PASSPORT</Text>
       </View>
-      <View style={styles.mainnetPill}>
-        <View style={styles.dot} />
-        <Text style={styles.mainnetText}>MAINNET</Text>
-      </View>
     </View>
   );
 }
@@ -40,16 +36,4 @@ const styles = StyleSheet.create({
   markText: {color: '#1c1711', fontSize: 25, fontWeight: '900'},
   title: {color: '#f4f0e8', fontSize: 18, fontWeight: '800', letterSpacing: -0.3},
   subtitle: {color: '#a8abb5', fontSize: 9, fontWeight: '800', letterSpacing: 2},
-  mainnetPill: {
-    alignItems: 'center',
-    borderColor: '#45434a',
-    borderRadius: 99,
-    borderWidth: 1,
-    flexDirection: 'row',
-    marginLeft: 'auto',
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-  },
-  dot: {backgroundColor: '#7bd7ff', borderRadius: 4, height: 7, marginRight: 7, width: 7},
-  mainnetText: {color: '#d4d7df', fontSize: 9, fontWeight: '800', letterSpacing: 0.8},
 });
