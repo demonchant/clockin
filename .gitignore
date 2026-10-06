@@ -1,0 +1,9 @@
+ClockInSpike/node_modules/
+ClockInSpike/android/.gradle/
+ClockInSpike/android/app/build/
+ClockInSpike/android/build/
+ClockInSpike/android/local.properties
+ClockInSpike/ios/Pods/
+ClockInSpike/ios/build/
+*.keystore
+*.jks
