@@ -6,19 +6,20 @@ import {
   AuthToken,
   Base64EncodedAddress,
   DeauthorizeAPI,
-  ReauthorizeAPI,
 } from '@solana-mobile/mobile-wallet-adapter-protocol';
 import {toUint8Array} from 'js-base64';
-import {useState, useCallback, useMemo, ReactNode} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useState, useCallback, useMemo, useEffect, ReactNode} from 'react';
 import React from 'react';
-
-import {RPC_ENDPOINT} from './ConnectionProvider';
+import {SOLANA_CHAIN} from './ConnectionProvider';
 
 export type Account = Readonly<{
   address: Base64EncodedAddress;
   label?: string;
   publicKey: PublicKey;
 }>;
+
+const LEGACY_AUTHORIZATION_KEY = 'openmic.wallet.authorization.v1';
 
 type Authorization = Readonly<{
   accounts: Account[];
@@ -37,6 +38,9 @@ function getAuthorizationFromAuthorizationResult(
   authorizationResult: AuthorizationResult,
   previouslySelectedAccount?: Account,
 ): Authorization {
+  if (authorizationResult.accounts.length === 0) {
+    throw new Error('Wallet authorization returned no accounts.');
+  }
   let selectedAccount: Account;
   if (
     // We have yet to select an account.
@@ -64,14 +68,14 @@ function getPublicKeyFromAddress(address: Base64EncodedAddress): PublicKey {
 }
 
 export const APP_IDENTITY = {
-  name: 'React Native dApp',
-  uri: 'https://solanamobile.com',
-  icon: 'favicon.ico',
+  name: 'OpenMic Passport',
+  uri: 'https://demonchant.github.io',
 };
 
 export interface AuthorizationProviderContext {
   accounts: Account[] | null;
-  authorizeSession: (wallet: AuthorizeAPI & ReauthorizeAPI) => Promise<Account>;
+  authorizationLoaded: boolean;
+  authorizeSession: (wallet: AuthorizeAPI) => Promise<Account>;
   deauthorizeSession: (wallet: DeauthorizeAPI) => void;
   onChangeAccount: (nextSelectedAccount: Account) => void;
   selectedAccount: Account | null;
@@ -79,7 +83,8 @@ export interface AuthorizationProviderContext {
 
 const AuthorizationContext = React.createContext<AuthorizationProviderContext>({
   accounts: null,
-  authorizeSession: (_wallet: AuthorizeAPI & ReauthorizeAPI) => {
+  authorizationLoaded: false,
+  authorizeSession: (_wallet: AuthorizeAPI) => {
     throw new Error('AuthorizationProvider not initialized');
   },
   deauthorizeSession: (_wallet: DeauthorizeAPI) => {
@@ -96,6 +101,14 @@ function AuthorizationProvider(props: {children: ReactNode}) {
   const [authorization, setAuthorization] = useState<Authorization | null>(
     null,
   );
+  const [authorizationLoaded, setAuthorizationLoaded] = useState(false);
+  useEffect(() => {
+    let active = true;
+    void AsyncStorage.removeItem(LEGACY_AUTHORIZATION_KEY).catch(() => {}).finally(() => {
+      if (active) setAuthorizationLoaded(true);
+    });
+    return () => { active = false; };
+  }, []);
   const handleAuthorizationResult = useCallback(
     async (
       authorizationResult: AuthorizationResult,
@@ -110,16 +123,12 @@ function AuthorizationProvider(props: {children: ReactNode}) {
     [authorization, setAuthorization],
   );
   const authorizeSession = useCallback(
-    async (wallet: AuthorizeAPI & ReauthorizeAPI) => {
-      const authorizationResult = await (authorization
-        ? wallet.reauthorize({
-            auth_token: authorization.authToken,
-            identity: APP_IDENTITY,
-          })
-        : wallet.authorize({
-            cluster: RPC_ENDPOINT,
-            identity: APP_IDENTITY,
-          }));
+    async (wallet: AuthorizeAPI) => {
+      const authorizationResult = await wallet.authorize({
+        chain: SOLANA_CHAIN,
+        auth_token: authorization?.authToken,
+        identity: APP_IDENTITY,
+      });
       return (await handleAuthorizationResult(authorizationResult))
         .selectedAccount;
     },
@@ -131,6 +140,7 @@ function AuthorizationProvider(props: {children: ReactNode}) {
         return;
       }
       await wallet.deauthorize({auth_token: authorization.authToken});
+      await AsyncStorage.removeItem(LEGACY_AUTHORIZATION_KEY);
       setAuthorization(null);
     },
     [authorization, setAuthorization],
@@ -147,10 +157,11 @@ function AuthorizationProvider(props: {children: ReactNode}) {
             `${nextSelectedAccount.address} is not one of the available addresses`,
           );
         }
-        return {
+        const nextAuthorization = {
           ...currentAuthorization,
           selectedAccount: nextSelectedAccount,
         };
+        return nextAuthorization;
       });
     },
     [setAuthorization],
@@ -158,12 +169,13 @@ function AuthorizationProvider(props: {children: ReactNode}) {
   const value = useMemo(
     () => ({
       accounts: authorization?.accounts ?? null,
+      authorizationLoaded,
       authorizeSession,
       deauthorizeSession,
       onChangeAccount,
       selectedAccount: authorization?.selectedAccount ?? null,
     }),
-    [authorization, authorizeSession, deauthorizeSession, onChangeAccount],
+    [authorization, authorizationLoaded, authorizeSession, deauthorizeSession, onChangeAccount],
   );
 
   return (

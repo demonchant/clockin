@@ -4,7 +4,7 @@ import {
 } from './components/providers/ConnectionProvider';
 import {clusterApiUrl} from '@solana/web3.js';
 import React from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import {SafeAreaView, StyleSheet, StatusBar} from 'react-native';
 import {AuthorizationProvider} from './components/providers/AuthorizationProvider';
 import {Header} from './components/Header';
 
@@ -17,6 +17,7 @@ export default function App() {
       endpoint={clusterApiUrl(RPC_ENDPOINT)}>
       <AuthorizationProvider>
         <SafeAreaView style={styles.shell}>
+          <StatusBar backgroundColor="#12141b" barStyle="light-content" />
           <Header />
           <MainScreen />
         </SafeAreaView>
@@ -27,6 +28,6 @@ export default function App() {
 
 const styles = StyleSheet.create({
   shell: {
-    height: '100%',
+    flex: 1,
   },
 });

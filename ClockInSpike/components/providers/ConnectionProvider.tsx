@@ -7,7 +7,10 @@ import React, {
   useContext,
 } from 'react';
 
+// The recording build uses real Solana accounts and mainnet receipts.
 export const RPC_ENDPOINT = 'mainnet-beta';
+export const SOLANA_CHAIN = 'solana:mainnet' as const;
+export const NETWORK_LABEL = 'MAINNET';
 
 export interface ConnectionProviderProps {
   children: ReactNode;

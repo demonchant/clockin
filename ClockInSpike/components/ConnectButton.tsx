@@ -23,12 +23,13 @@ export default function ConnectButton({title = 'Connect wallet'}: Props) {
       });
       setMessage('Wallet connected.');
     } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      const rejected = /reject|cancel|declin|user abort/i.test(detail);
+      const detail = error instanceof Error ? error.message.trim() : String(error).trim();
+      const errorName = error instanceof Error ? error.name : '';
+      const rejected = /reject|cancel|declin|user abort/i.test(`${errorName} ${detail}`);
       setMessage(
         rejected
-          ? 'Connection cancelled. No wallet action was approved.'
-          : `Could not connect: ${detail}`,
+          ? 'Wallet did not complete the connection. Return here and try again. No transaction was sent.'
+          : `Could not connect: ${detail || errorName || 'Wallet did not return an authorization result.'}`,
       );
     } finally {
       setConnecting(false);

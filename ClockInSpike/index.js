@@ -2,6 +2,7 @@
  * @format
  */
 import {Buffer} from 'buffer';
+import './polyfills';
 import 'react-native-get-random-values';
 
 import {AppRegistry} from 'react-native';
