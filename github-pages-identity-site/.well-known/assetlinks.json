@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.clockinspike",
+      "sha256_cert_fingerprints": [
+        "8E:1B:F2:50:98:B7:BE:C4:92:97:12:CB:20:07:64:21:A2:AB:12:10:6D:7E:F7:B8:A1:AC:C7:52:48:B2:82:E6"
+      ]
+    }
+  }
+]
